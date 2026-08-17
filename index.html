@@ -87,14 +87,93 @@
     </section>
 
     <section id="quiz" class="page">
-      <div class="page-heading"><div><h2>퀴즈</h2><p>핵심 개념을 짧게 반복해서 확인합니다.</p></div></div>
-      <div class="mode-tabs"><button id="conceptMode" class="mode-btn active">객관식 퀴즈</button><button id="mockMode" class="mode-btn">1교시 모의고사</button></div>
-      <div id="conceptPanel">
-        <div class="card quiz-card"><div id="quizProgress" class="muted"></div><h3 id="quizQ">시작 버튼을 눌러주세요.</h3><div id="quizChoices"></div><div id="quizExplain" class="explain"></div><button id="quizNext" class="primary">퀴즈 시작</button></div>
+      <div class="page-heading"><div><h2>모의고사 · 연습</h2><p>1~4교시 실전 구조와 자기채점을 지원합니다.</p></div></div>
+
+      <div class="mode-tabs">
+        <button id="conceptMode" class="mode-btn active">객관식</button>
+        <button id="practiceMode" class="mode-btn">연습모드</button>
+        <button id="mockMode" class="mode-btn">실전모의</button>
       </div>
+
+      <div id="conceptPanel">
+        <div class="card quiz-card">
+          <div id="quizProgress" class="muted"></div>
+          <h3 id="quizQ">시작 버튼을 눌러주세요.</h3>
+          <div id="quizChoices"></div>
+          <div id="quizExplain" class="explain"></div>
+          <button id="quizNext" class="primary">퀴즈 시작</button>
+        </div>
+      </div>
+
+      <div id="practicePanel" class="hidden">
+        <div class="card block mock-setup">
+          <h3>서술형 연습모드</h3>
+          <p>교시와 분야를 선택하고 한 문제씩 답안을 작성한 뒤 모범답안·키워드와 비교합니다.</p>
+          <div class="stack-gap">
+            <select id="practiceSession">
+              <option value="1">1교시</option><option value="2">2교시</option><option value="3">3교시</option><option value="4">4교시</option>
+            </select>
+            <select id="practiceCategory"><option value="">전체 분야</option></select>
+            <button id="startPractice" class="primary">연습 시작</button>
+          </div>
+        </div>
+        <div id="practiceExam" class="hidden">
+          <div class="mock-sticky">
+            <b id="practiceMeta">연습</b>
+            <span id="practiceCount">1문제</span>
+            <button id="newPractice" class="secondary small">다른 문제</button>
+          </div>
+          <article class="mock-item">
+            <div id="practiceQMeta" class="qmeta"></div>
+            <h3 id="practiceQuestion"></h3>
+            <textarea id="practiceAnswer" class="mock-answer" rows="10" placeholder="답안 구조와 핵심 키워드를 작성하세요."></textarea>
+            <div class="practice-actions"><button id="practiceCheck" class="primary">모범답안과 비교</button></div>
+            <div id="practiceReview" class="review-panel hidden"></div>
+          </article>
+        </div>
+      </div>
+
       <div id="mockPanel" class="hidden">
-        <div class="card block mock-setup"><h3>1교시 랜덤 모의고사</h3><p>기출 DB에서 13문제를 무작위로 뽑습니다. 실제 시험처럼 100분 타이머를 사용할 수 있어요.</p><div class="row"><select id="mockCategory"><option value="">전체 분야</option></select><button id="startMock" class="primary">13문제 시작</button></div></div>
-        <div id="mockExam" class="hidden"><div class="mock-sticky"><b id="mockTimer">100:00</b><span id="mockAnswered">0 / 13 작성</span><button id="finishMock" class="danger small">종료</button></div><div id="mockList"></div></div>
+        <div class="card block mock-setup">
+          <h3>실전 모의고사</h3>
+          <p>1교시는 13문제 중 10문제, 2~4교시는 6문제 중 4문제를 선택합니다.</p>
+          <div class="stack-gap">
+            <select id="mockSession">
+              <option value="1">1교시 · 13문제 중 10문제</option>
+              <option value="2">2교시 · 6문제 중 4문제</option>
+              <option value="3">3교시 · 6문제 중 4문제</option>
+              <option value="4">4교시 · 6문제 중 4문제</option>
+            </select>
+            <select id="mockCategory"><option value="">전체 분야</option></select>
+            <button id="startMock" class="primary">100분 실전 시작</button>
+          </div>
+        </div>
+
+        <div id="mockExam" class="hidden">
+          <div class="mock-sticky">
+            <b id="mockTimer">100:00</b>
+            <span id="mockAnswered">0 선택</span>
+            <button id="finishMock" class="danger small">채점으로</button>
+          </div>
+          <div id="mockRule" class="notice compact"></div>
+          <div id="mockList"></div>
+        </div>
+
+        <div id="scoringPanel" class="hidden">
+          <div class="card block">
+            <div class="section-title"><h3>자기채점</h3><span id="scoreProgress" class="muted"></span></div>
+            <p class="muted">키워드/구조 분석은 참고용이며 최종점수는 직접 선택합니다.</p>
+          </div>
+          <div id="scoreList"></div>
+          <div class="card block score-summary">
+            <div class="score-big"><b id="scoreTotal">0</b><span>/ 100</span></div>
+            <div id="scoreBreakdown" class="muted"></div>
+            <button id="saveMockResult" class="primary">성적 저장</button>
+          </div>
+        </div>
+
+        <div class="section-title"><h3>모의고사 성적</h3><button id="clearMockHistory" class="text-btn">기록 초기화</button></div>
+        <div id="mockHistory" class="history-list"></div>
       </div>
     </section>
 

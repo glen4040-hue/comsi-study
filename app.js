@@ -129,7 +129,8 @@ $('quizNext').onclick=()=>quizIndex===-1?newQuiz():nextQuiz();
 $('exportBtn').onclick=()=>{let blob=new Blob([JSON.stringify(user,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='comsi-study-backup.json';a.click();URL.revokeObjectURL(a.href);};
 $('importInput').onchange=e=>{let f=e.target.files[0];if(!f)return;let rd=new FileReader();rd.onload=()=>{try{user=JSON.parse(rd.result);save();renderQuestions();alert('복원이 완료되었습니다.');}catch{alert('올바른 백업 파일이 아닙니다.');}};rd.readAsText(f);};
 $('resetBtn').onclick=()=>{if(confirm('내가 수정한 분류/답안/메모/즐겨찾기를 모두 삭제할까요?')){user={};save();renderQuestions();}};
-$('themeBtn').onclick=()=>{document.body.classList.toggle('dark');localStorage.setItem('dark',document.body.classList.contains('dark')?'1':'0');};
-if(localStorage.getItem('dark')==='1'||localStorage.getItem('dark')===null)document.body.classList.add('dark');
+function applyTheme(isDark){document.body.classList.toggle('dark',isDark);localStorage.setItem('dark',isDark?'1':'0');const b=$('themeBtn');if(b){b.textContent=isDark?'☀':'◐';b.setAttribute('aria-label',isDark?'라이트 모드로 변경':'다크 모드로 변경');}}
+const savedDark=localStorage.getItem('dark');applyTheme(savedDark===null?true:savedDark==='1');
+$('themeBtn').onclick=()=>applyTheme(!document.body.classList.contains('dark'));
 initFilters();refreshHome();renderQuestions();
-if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js?v=14');
+if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js?v=141');
