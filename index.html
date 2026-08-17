@@ -96,11 +96,26 @@
       </div>
 
       <div id="conceptPanel">
+        <div class="card block quiz-setup">
+          <div class="section-title"><h3>객관식 문제은행</h3><span id="quizBankInfo" class="muted">총 120문항</span></div>
+          <p class="muted">기출 토픽을 객관식 학습문제로 재구성했습니다. 매 회 무작위로 출제됩니다.</p>
+          <div class="quiz-options">
+            <select id="quizCategory"><option value="">전체 분야</option></select>
+            <select id="quizCount">
+              <option value="10">10문제</option>
+              <option value="20">20문제</option>
+              <option value="30">30문제</option>
+              <option value="50">50문제</option>
+              <option value="all">전체 문제</option>
+            </select>
+          </div>
+        </div>
         <div class="card quiz-card">
           <div id="quizProgress" class="muted"></div>
           <h3 id="quizQ">시작 버튼을 눌러주세요.</h3>
           <div id="quizChoices"></div>
           <div id="quizExplain" class="explain"></div>
+          <div id="quizRef" class="quiz-ref"></div>
           <button id="quizNext" class="primary">퀴즈 시작</button>
         </div>
       </div>

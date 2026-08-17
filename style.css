@@ -32,3 +32,10 @@ nav{position:fixed;z-index:30;bottom:0;left:50%;transform:translateX(-50%);width
 
 /* v1.5.0 default answer / editable answer */
 .answer-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px}.answer-head>div{display:flex;align-items:center;gap:8px;min-width:0}.answer-badge{font-size:10px;padding:4px 7px;border-radius:999px;background:var(--line);color:var(--muted);white-space:nowrap}.answer-badge.ready{color:#36c98f;background:rgba(54,201,143,.12)}.answer-note{font-size:11px;line-height:1.5;color:var(--muted);margin:8px 0}.default-answer{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:14px;font-size:14px;line-height:1.7;max-height:42vh;overflow-y:auto;margin-bottom:14px}.sheet label{display:block;margin-top:12px}.sheet textarea{width:100%;box-sizing:border-box}
+
+/* v1.5.1 객관식 문제은행 */
+.quiz-setup{margin-bottom:12px}
+.quiz-options{display:grid;grid-template-columns:1fr 110px;gap:8px;margin-top:12px}
+.quiz-options select{width:100%;min-width:0;min-height:46px}
+.quiz-ref{margin-top:10px;font-size:11px;color:var(--muted);text-align:right;min-height:16px}
+@media(max-width:370px){.quiz-options{grid-template-columns:1fr 96px}.quiz-options select{font-size:12px}}
