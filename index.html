@@ -35,7 +35,16 @@
         <div class="card"><b id="qCount">0</b><span>기출문제</span></div>
         <div class="card"><b id="favCount">0</b><span>즐겨찾기</span></div>
         <div class="card"><b id="answerCount">0</b><span>작성 답안</span></div>
-        <div class="card"><b id="quizScore">-</b><span>최근 퀴즈</span></div>
+        <div class="card"><b id="reviewCount">0</b><span>복습필요</span></div>
+      </div>
+      <div class="section-title"><h3>학습 현황</h3><button data-go="questions">문제 보기</button></div>
+      <div class="study-progress card block">
+        <div class="progress-head"><b id="studyPct">0%</b><span id="studySummary">아직 학습을 시작하지 않았어요.</span></div>
+        <div class="progress-track"><div id="studyProgressBar" class="progress-fill"></div></div>
+        <div class="quick-study">
+          <button id="goUnstudied" class="secondary">미학습 <b id="unstudiedCount">0</b></button>
+          <button id="goReview" class="secondary">복습필요 <b id="homeReviewCount">0</b></button>
+        </div>
       </div>
       <div class="section-title"><h3>분야별 출제 분포</h3><button data-go="stats">자세히</button></div>
       <div id="homeBars" class="bars"></div>
@@ -55,7 +64,7 @@
       <div class="filters filter-scroll">
         <select id="roundFilter"><option value="">전체 회차</option></select>
         <select id="sessionFilter"><option value="">전체 교시</option><option value="1">1교시</option><option value="2">2교시</option><option value="3">3교시</option><option value="4">4교시</option></select>
-        <select id="catFilter"><option value="">전체 분야</option></select>
+        <select id="catFilter"><option value="">전체 분야</option></select><select id="statusFilter"><option value="">전체 상태</option><option value="미학습">미학습</option><option value="학습중">학습중</option><option value="복습필요">복습필요</option><option value="완료">완료</option></select>
       </div>
 
       <div class="question-toolbar">
@@ -79,8 +88,14 @@
 
     <section id="quiz" class="page">
       <div class="page-heading"><div><h2>퀴즈</h2><p>핵심 개념을 짧게 반복해서 확인합니다.</p></div></div>
-      <div class="card quiz-card"><div id="quizProgress" class="muted"></div><h3 id="quizQ">시작 버튼을 눌러주세요.</h3><div id="quizChoices"></div><div id="quizExplain" class="explain"></div><button id="quizNext" class="primary">퀴즈 시작</button></div>
-      <div class="notice">현재는 핵심개념 객관식 10문항입니다. 이후 기출 전체와 연결된 문제은행으로 확장할 수 있습니다.</div>
+      <div class="mode-tabs"><button id="conceptMode" class="mode-btn active">객관식 퀴즈</button><button id="mockMode" class="mode-btn">1교시 모의고사</button></div>
+      <div id="conceptPanel">
+        <div class="card quiz-card"><div id="quizProgress" class="muted"></div><h3 id="quizQ">시작 버튼을 눌러주세요.</h3><div id="quizChoices"></div><div id="quizExplain" class="explain"></div><button id="quizNext" class="primary">퀴즈 시작</button></div>
+      </div>
+      <div id="mockPanel" class="hidden">
+        <div class="card block mock-setup"><h3>1교시 랜덤 모의고사</h3><p>기출 DB에서 13문제를 무작위로 뽑습니다. 실제 시험처럼 100분 타이머를 사용할 수 있어요.</p><div class="row"><select id="mockCategory"><option value="">전체 분야</option></select><button id="startMock" class="primary">13문제 시작</button></div></div>
+        <div id="mockExam" class="hidden"><div class="mock-sticky"><b id="mockTimer">100:00</b><span id="mockAnswered">0 / 13 작성</span><button id="finishMock" class="danger small">종료</button></div><div id="mockList"></div></div>
+      </div>
     </section>
 
     <section id="settings" class="page">
@@ -105,7 +120,7 @@
     <div id="modalMeta" class="pill"></div>
     <h2 id="modalTitle"></h2>
     <p id="modalQuestion" class="question-text"></p>
-    <label>분류<select id="editCategory"></select></label>
+    <div class="detail-grid"><label>분류<select id="editCategory"></select></label><label>학습상태<select id="editStatus"><option>미학습</option><option>학습중</option><option>복습필요</option><option>완료</option></select></label></div><label>핵심 키워드<input id="editKeywords" class="detail-input" placeholder="예: FTL, TRIM, Wear Leveling"></label>
     <label class="favline"><input id="editFavorite" type="checkbox"> 즐겨찾기</label>
     <label>모범답안<textarea id="editModel" rows="9" placeholder="여기에 모범답안을 작성하거나 붙여넣으세요."></textarea></label>
     <label>내 답안<textarea id="editMine" rows="9" placeholder="내가 암기할 답안을 직접 수정해보세요."></textarea></label>
