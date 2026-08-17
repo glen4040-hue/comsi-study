@@ -1,25 +1,118 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111827"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="컴시응 Study"><title>컴시응 Study</title><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="style.css"></head>
-<body><div id="app">
-<header><div><small>Computer Systems Application PE</small><h1>컴시응 Study</h1></div><button id="themeBtn" class="icon">◐</button></header>
-<main>
-<section id="home" class="page active"><div class="hero"><div><span class="pill">개인 학습 DB</span><h2>기출을 데이터로 공부하기</h2><p>회차·교시·분류·답안·퀴즈를 한 곳에서 관리합니다.</p></div></div>
-<div class="stat-grid"><div class="card"><b id="qCount">0</b><span>기출문제</span></div><div class="card"><b id="favCount">0</b><span>즐겨찾기</span></div><div class="card"><b id="answerCount">0</b><span>작성 답안</span></div><div class="card"><b id="quizScore">-</b><span>최근 퀴즈</span></div></div>
-<div class="section-title"><h3>분야별 출제 분포</h3><button data-go="stats">자세히</button></div><div id="homeBars" class="bars"></div>
-<div class="notice">초기 분류는 자동 분류입니다. 문제 상세에서 원하는 분류로 직접 바꿀 수 있습니다.</div></section>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="컴시응 Study">
+  <meta name="format-detection" content="telephone=no">
+  <title>컴시응 Study</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">
+      <small>Computer Systems Application PE</small>
+      <h1>컴시응 Study</h1>
+    </div>
+    <button id="themeBtn" class="icon" aria-label="테마 변경">◐</button>
+  </header>
 
-<section id="questions" class="page"><h2>기출문제</h2><input id="search" class="search" placeholder="예: Cache, RAG, Deadlock, TCP">
-<div class="filters"><select id="roundFilter"><option value="">전체 회차</option></select><select id="sessionFilter"><option value="">전체 교시</option><option>1</option><option>2</option><option>3</option><option>4</option></select><select id="catFilter"><option value="">전체 분류</option></select></div>
-<div id="resultInfo" class="muted"></div><div id="questionList" class="list"></div></section>
+  <main>
+    <section id="home" class="page active">
+      <div class="hero">
+        <div>
+          <span class="pill">개인 학습 DB</span>
+          <h2>기출을 데이터로 공부하기</h2>
+          <p>회차·교시·분류·답안·퀴즈를 한 곳에서 관리합니다.</p>
+        </div>
+      </div>
+      <div class="stat-grid">
+        <div class="card"><b id="qCount">0</b><span>기출문제</span></div>
+        <div class="card"><b id="favCount">0</b><span>즐겨찾기</span></div>
+        <div class="card"><b id="answerCount">0</b><span>작성 답안</span></div>
+        <div class="card"><b id="quizScore">-</b><span>최근 퀴즈</span></div>
+      </div>
+      <div class="section-title"><h3>분야별 출제 분포</h3><button data-go="stats">자세히</button></div>
+      <div id="homeBars" class="bars"></div>
+      <div class="notice">초기 분류는 자동 분류입니다. 문제 상세에서 원하는 분류로 직접 바꿀 수 있습니다.</div>
+    </section>
 
-<section id="stats" class="page"><h2>출제 통계</h2><div class="card block"><h3>전체 분야 분포</h3><div id="statsBars" class="bars"></div></div><div class="card block"><h3>회차 선택</h3><select id="statsRound"><option value="">전체 회차</option></select><div id="roundBars" class="bars space"></div></div></section>
+    <section id="questions" class="page questions-page">
+      <div class="page-heading">
+        <div><h2>기출문제</h2><p>회차·교시·분야별로 빠르게 찾아보세요.</p></div>
+      </div>
 
-<section id="quiz" class="page"><h2>퀴즈</h2><div class="card quiz-card"><div id="quizProgress" class="muted"></div><h3 id="quizQ">시작 버튼을 눌러주세요.</h3><div id="quizChoices"></div><div id="quizExplain" class="explain"></div><button id="quizNext" class="primary">퀴즈 시작</button></div><div class="notice">V1은 핵심개념 객관식 10문항입니다. 이후 기출 전체를 연결한 문제은행으로 확장할 수 있습니다.</div></section>
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input id="search" class="search" placeholder="문제 검색 (예: Cache, RAG, TCP)" autocomplete="off">
+      </div>
 
-<section id="settings" class="page"><h2>설정 / 데이터</h2><div class="card block"><h3>내 데이터 백업</h3><p>분류 수정, 즐겨찾기, 답안, 메모를 JSON 파일로 백업하거나 복원할 수 있습니다.</p><div class="row"><button id="exportBtn" class="primary">백업 다운로드</button><label class="secondary file">백업 복원<input id="importInput" type="file" accept="application/json"></label></div></div><div class="card block"><h3>초기화</h3><p>내가 수정한 내용만 삭제하고 기출 원본 상태로 돌아갑니다.</p><button id="resetBtn" class="danger">내 학습 데이터 초기화</button></div></section>
-</main>
-<nav><button data-page="home" class="active">⌂<span>홈</span></button><button data-page="questions">☷<span>기출</span></button><button data-page="stats">▥<span>통계</span></button><button data-page="quiz">◆<span>퀴즈</span></button><button data-page="settings">⚙<span>설정</span></button></nav></div>
+      <div class="filters filter-scroll">
+        <select id="roundFilter"><option value="">전체 회차</option></select>
+        <select id="sessionFilter"><option value="">전체 교시</option><option value="1">1교시</option><option value="2">2교시</option><option value="3">3교시</option><option value="4">4교시</option></select>
+        <select id="catFilter"><option value="">전체 분야</option></select>
+      </div>
 
-<div id="modal" class="modal"><div class="sheet"><button id="closeModal" class="close">×</button><div id="modalMeta" class="pill"></div><h2 id="modalTitle"></h2><p id="modalQuestion" class="question-text"></p><label>분류<select id="editCategory"></select></label><label class="favline"><input id="editFavorite" type="checkbox"> 즐겨찾기</label><label>모범답안<textarea id="editModel" rows="9" placeholder="여기에 모범답안을 작성하거나 붙여넣으세요."></textarea></label><label>내 답안<textarea id="editMine" rows="9" placeholder="내가 암기할 답안을 직접 수정해보세요."></textarea></label><label>메모<textarea id="editMemo" rows="4" placeholder="키워드, 그림 아이디어, 복습 포인트"></textarea></label><button id="saveDetail" class="primary wide">저장</button></div></div>
-<script src="questions.js"></script><script src="quiz.js"></script><script src="app.js"></script></body></html>
+      <div class="question-toolbar">
+        <div id="resultInfo" class="result-count">0개 문제</div>
+        <div class="toolbar-actions">
+          <button id="favOnlyBtn" class="tool-btn" aria-pressed="false">☆ 즐겨찾기</button>
+          <select id="sortFilter" class="sort-select" aria-label="정렬">
+            <option value="new">최신순</option>
+            <option value="old">오래된순</option>
+          </select>
+        </div>
+      </div>
+      <div id="questionList" class="list"></div>
+    </section>
+
+    <section id="stats" class="page">
+      <div class="page-heading"><div><h2>출제 통계</h2><p>분야별 출제 비중을 건수와 비율로 확인합니다.</p></div></div>
+      <div class="card block"><h3>전체 분야 분포</h3><div id="statsBars" class="bars"></div></div>
+      <div class="card block"><h3>회차 선택</h3><select id="statsRound"><option value="">전체 회차</option></select><div id="roundBars" class="bars space"></div></div>
+    </section>
+
+    <section id="quiz" class="page">
+      <div class="page-heading"><div><h2>퀴즈</h2><p>핵심 개념을 짧게 반복해서 확인합니다.</p></div></div>
+      <div class="card quiz-card"><div id="quizProgress" class="muted"></div><h3 id="quizQ">시작 버튼을 눌러주세요.</h3><div id="quizChoices"></div><div id="quizExplain" class="explain"></div><button id="quizNext" class="primary">퀴즈 시작</button></div>
+      <div class="notice">현재는 핵심개념 객관식 10문항입니다. 이후 기출 전체와 연결된 문제은행으로 확장할 수 있습니다.</div>
+    </section>
+
+    <section id="settings" class="page">
+      <div class="page-heading"><div><h2>설정 / 데이터</h2><p>내 답안과 학습 데이터를 안전하게 백업하세요.</p></div></div>
+      <div class="card block"><h3>내 데이터 백업</h3><p>분류 수정, 즐겨찾기, 답안, 메모를 JSON 파일로 백업하거나 복원할 수 있습니다.</p><div class="row"><button id="exportBtn" class="primary">백업 다운로드</button><label class="secondary file">백업 복원<input id="importInput" type="file" accept="application/json"></label></div></div>
+      <div class="card block"><h3>초기화</h3><p>내가 수정한 내용만 삭제하고 기출 원본 상태로 돌아갑니다.</p><button id="resetBtn" class="danger">내 학습 데이터 초기화</button></div>
+    </section>
+  </main>
+
+  <nav>
+    <button data-page="home" class="active"><span class="nav-ico">⌂</span><span>홈</span></button>
+    <button data-page="questions"><span class="nav-ico">▤</span><span>기출문제</span></button>
+    <button data-page="stats"><span class="nav-ico">▥</span><span>통계</span></button>
+    <button data-page="quiz"><span class="nav-ico">◆</span><span>퀴즈</span></button>
+    <button data-page="settings"><span class="nav-ico">⚙</span><span>설정</span></button>
+  </nav>
+</div>
+
+<div id="modal" class="modal">
+  <div class="sheet">
+    <button id="closeModal" class="close" aria-label="닫기">×</button>
+    <div id="modalMeta" class="pill"></div>
+    <h2 id="modalTitle"></h2>
+    <p id="modalQuestion" class="question-text"></p>
+    <label>분류<select id="editCategory"></select></label>
+    <label class="favline"><input id="editFavorite" type="checkbox"> 즐겨찾기</label>
+    <label>모범답안<textarea id="editModel" rows="9" placeholder="여기에 모범답안을 작성하거나 붙여넣으세요."></textarea></label>
+    <label>내 답안<textarea id="editMine" rows="9" placeholder="내가 암기할 답안을 직접 수정해보세요."></textarea></label>
+    <label>메모<textarea id="editMemo" rows="4" placeholder="키워드, 그림 아이디어, 복습 포인트"></textarea></label>
+    <button id="saveDetail" class="primary wide">저장</button>
+  </div>
+</div>
+<script src="questions.js"></script><script src="quiz.js"></script><script src="app.js"></script>
+</body>
+</html>
