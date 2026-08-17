@@ -39,3 +39,36 @@ nav{position:fixed;z-index:30;bottom:0;left:50%;transform:translateX(-50%);width
 .quiz-options select{width:100%;min-width:0;min-height:46px}
 .quiz-ref{margin-top:10px;font-size:11px;color:var(--muted);text-align:right;min-height:16px}
 @media(max-width:370px){.quiz-options{grid-template-columns:1fr 96px}.quiz-options select{font-size:12px}}
+
+/* v1.5.2 객관식 오답노트 / 정답률 */
+.quiz-progress-card{margin-bottom:12px}
+.quiz-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.quiz-stat{background:var(--bg);border:1px solid var(--line);border-radius:13px;padding:11px 7px;text-align:center}
+.quiz-stat b{display:block;font-size:22px;line-height:1.1}
+.quiz-stat span{display:block;margin-top:5px;font-size:11px;color:var(--muted)}
+.quiz-study-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.quiz-study-actions button{min-width:0}
+button:disabled,.disabled{opacity:.45;cursor:not-allowed}
+.category-stat-title{margin:16px 0 8px;font-size:12px;font-weight:800;color:var(--muted)}
+.quiz-category-stats{display:grid;gap:7px}
+.quiz-cat-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(60px,1fr) 42px 38px;align-items:center;gap:7px;font-size:11px}
+.quiz-cat-row>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quiz-cat-row>b{text-align:right}
+.quiz-cat-row>em{font-style:normal;color:var(--muted);text-align:right}
+.quiz-cat-track{height:7px;border-radius:999px;background:var(--line);overflow:hidden}
+.quiz-cat-track i{display:block;height:100%;border-radius:999px;background:var(--accent)}
+.wrong-notebook{margin-bottom:12px}
+.wrong-card{border-top:1px solid var(--line);padding:13px 0}
+.wrong-card:first-child{border-top:0;padding-top:4px}
+.wrong-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.wrong-rate{font-size:11px;color:var(--muted)}
+.wrong-q{font-size:14px;font-weight:750;line-height:1.55;margin:9px 0;overflow-wrap:anywhere;word-break:break-word}
+.wrong-card details{border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0}
+.wrong-card summary{font-size:12px;font-weight:800;cursor:pointer}
+.wrong-answer{margin-top:10px;font-size:13px;line-height:1.5}
+.wrong-explain{font-size:12px;color:var(--muted);line-height:1.55;margin-top:7px}
+.retry-one-wrong{width:100%;min-height:42px;margin-top:4px}
+@media(max-width:370px){
+  .quiz-cat-row{grid-template-columns:minmax(0,1.2fr) minmax(50px,.8fr) 38px 34px;gap:5px}
+  .quiz-study-actions{grid-template-columns:1fr}
+}

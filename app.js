@@ -4,7 +4,7 @@ const BASE=RAW_BASE.map(q=>({...q,...(ANSWER_DATA[q.id]||{})}));
 const CATS=["컴퓨터 기초이론","하드웨어 시스템","시스템 SW 및 응용 SW","컴퓨터 통신 및 네트워크","시스템보안","컴퓨터 시스템 평가","법규·정책·표준","최신 기술 동향","미분류"];
 const KEY="comsiStudyUserV1";
 let user=JSON.parse(localStorage.getItem(KEY)||"{}");
-let currentId=null, quizOrder=[],quizIndex=-1,quizCorrect=0,quizLocked=false,favOnly=false;
+let currentId=null, quizOrder=[],quizIndex=-1,quizCorrect=0,quizLocked=false,favOnly=false,quizSource='normal';
 let mockQuestions=[], mockTimerId=null, mockSeconds=6000, mockSession=1, mockRequired=10, mockSelected=new Set(), currentPractice=null, pendingMockResult=null;
 const $=id=>document.getElementById(id);
 const merged=q=>({...q,...(user[q.id]||{})});
@@ -48,6 +48,82 @@ $('copyDefaultAnswer').onclick=()=>{let q=all().find(x=>x.id===currentId);if(!q|
 
 $('goUnstudied').onclick=()=>{$('statusFilter').value='미학습';gotoPage('questions');};
 $('goReview').onclick=()=>{$('statusFilter').value='복습필요';gotoPage('questions');};
+
+const QUIZ_STATS_KEY='comsiQuizStatsV1';
+let quizStats=loadQuizStats();
+function loadQuizStats(){
+  try{
+    const v=JSON.parse(localStorage.getItem(QUIZ_STATS_KEY)||'{}');
+    return {byQuestion:v.byQuestion||{}};
+  }catch(e){return {byQuestion:{}};}
+}
+function saveQuizStats(){localStorage.setItem(QUIZ_STATS_KEY,JSON.stringify(quizStats));}
+function quizStatEntry(q){return quizStats.byQuestion[q.q]||null;}
+function recordQuizAnswer(q,isCorrect){
+  const old=quizStats.byQuestion[q.q]||{attempts:0,correct:0,wrong:0,lastCorrect:null,category:q.category,ref:q.ref||''};
+  old.attempts++; if(isCorrect)old.correct++; else old.wrong++;
+  old.lastCorrect=!!isCorrect; old.category=q.category; old.ref=q.ref||'';
+  quizStats.byQuestion[q.q]=old; saveQuizStats(); renderQuizLearningStats();
+}
+function wrongQuizIndices(){
+  return QUIZ_BANK.map((q,i)=>({q,i})).filter(x=>quizStatEntry(x.q)?.lastCorrect===false).map(x=>x.i);
+}
+function quizTotals(){
+  const values=Object.values(quizStats.byQuestion);
+  const attempts=values.reduce((s,x)=>s+(x.attempts||0),0);
+  const correct=values.reduce((s,x)=>s+(x.correct||0),0);
+  return {attempts,correct,accuracy:attempts?Math.round(correct/attempts*100):0};
+}
+function renderQuizLearningStats(){
+  const t=quizTotals(),wrong=wrongQuizIndices();
+  $('quizAttempts').textContent=t.attempts;
+  $('quizAccuracy').textContent=t.attempts?t.accuracy+'%':'-';
+  $('quizWrongCount').textContent=wrong.length;
+  $('wrongNotebookCount').textContent=wrong.length+'문제';
+  $('retryWrongBtn').disabled=!wrong.length;
+  $('retryWrongBtn').classList.toggle('disabled',!wrong.length);
+
+  const byCat={};
+  Object.entries(quizStats.byQuestion).forEach(([question,s])=>{
+    const cat=s.category||'미분류';
+    byCat[cat]??={attempts:0,correct:0};
+    byCat[cat].attempts+=s.attempts||0;byCat[cat].correct+=s.correct||0;
+  });
+  const attempted=Object.entries(byCat).filter(([,v])=>v.attempts);
+  $('quizCategoryStats').innerHTML=attempted.length?`<div class="category-stat-title">분야별 정답률</div>`+attempted
+    .sort((a,b)=>b[1].attempts-a[1].attempts)
+    .map(([cat,v])=>{const pct=Math.round(v.correct/v.attempts*100);return `<div class="quiz-cat-row"><span>${escapeHtml(cat)}</span><div class="quiz-cat-track"><i style="width:${pct}%"></i></div><b>${pct}%</b><em>${v.attempts}회</em></div>`;}).join(''):'';
+
+  $('wrongNotebookList').innerHTML=wrong.length?wrong.map(i=>{
+    const q=QUIZ_BANK[i],s=quizStatEntry(q);
+    return `<article class="wrong-card">
+      <div class="wrong-head"><span class="tag">${escapeHtml(q.category)}</span><span class="wrong-rate">누적 ${s.correct||0}/${s.attempts||0}</span></div>
+      <div class="wrong-q">${escapeHtml(q.q)}</div>
+      <details><summary>정답 · 해설 보기</summary>
+        <div class="wrong-answer"><b>정답</b> ${q.a+1}. ${escapeHtml(q.choices[q.a])}</div>
+        <div class="wrong-explain">${escapeHtml(q.ex)}</div>
+        ${q.ref?`<div class="quiz-ref">기출 연계: ${escapeHtml(q.ref)}</div>`:''}
+      </details>
+      <button class="secondary retry-one-wrong" data-quiz-index="${i}">이 문제 다시 풀기</button>
+    </article>`;
+  }).join(''):'<div class="empty">현재 오답노트가 비어 있습니다. 👏</div>';
+  document.querySelectorAll('.retry-one-wrong').forEach(b=>b.onclick=()=>startQuizFromIndices([Number(b.dataset.quizIndex)],'wrong'));
+}
+function startQuizFromIndices(indices,source='normal'){
+  if(!indices.length){alert('다시 풀 오답이 없습니다.');return;}
+  quizOrder=[...indices].sort(()=>Math.random()-.5);quizSource=source;quizIndex=-1;quizCorrect=0;
+  $('wrongNotebook').classList.add('hidden');nextQuiz();
+}
+$('retryWrongBtn').onclick=()=>startQuizFromIndices(wrongQuizIndices(),'wrong');
+$('toggleWrongNotebook').onclick=()=>{
+  const el=$('wrongNotebook');el.classList.toggle('hidden');
+  $('toggleWrongNotebook').textContent=el.classList.contains('hidden')?'오답노트 보기':'오답노트 닫기';
+  if(!el.classList.contains('hidden'))renderQuizLearningStats();
+};
+$('resetQuizStats').onclick=()=>{
+  if(!confirm('객관식 누적 풀이·정답률·오답노트 기록을 모두 초기화할까요?'))return;
+  quizStats={byQuestion:{}};saveQuizStats();localStorage.removeItem('quizScore');renderQuizLearningStats();
+};
 
 // Quiz / practice / mock mode
 function setQuizMode(mode){
@@ -133,6 +209,7 @@ function newQuiz(){
   if(!pool.length){alert('선택한 분야의 객관식 문제가 없습니다.');return;}
   pool.sort(()=>Math.random()-.5);
   const count=countValue==='all'?pool.length:Math.min(Number(countValue),pool.length);
+  quizSource='normal';
   quizOrder=pool.slice(0,count).map(x=>x.i);
   quizIndex=-1;quizCorrect=0;nextQuiz();
 }
@@ -142,8 +219,8 @@ function nextQuiz(){
     let pct=Math.round(quizCorrect/quizOrder.length*100);
     $('quizQ').textContent=`완료! ${quizCorrect}/${quizOrder.length} (${pct}%)`;
     $('quizProgress').textContent='';$('quizChoices').innerHTML='';
-    $('quizNext').textContent='다시 시작';$('quizNext').style.display='inline-block';
-    localStorage.setItem('quizScore',pct+'%');refreshHome();quizIndex=-1;return;
+    $('quizNext').textContent=quizSource==='wrong'?'오답 다시 풀기':'다시 시작';$('quizNext').style.display='inline-block';
+    localStorage.setItem('quizScore',pct+'%');refreshHome();renderQuizLearningStats();quizIndex=-1;return;
   }
   let q=QUIZ_BANK[quizOrder[quizIndex]];
   $('quizProgress').textContent=`${quizIndex+1} / ${quizOrder.length} · ${q.category}`;
@@ -156,17 +233,27 @@ function answerQuiz(i){
   if(quizLocked)return;quizLocked=true;
   let q=QUIZ_BANK[quizOrder[quizIndex]];
   document.querySelectorAll('.choice').forEach((b,j)=>{if(j===q.a)b.classList.add('correct');else if(j===i)b.classList.add('wrong');});
-  if(i===q.a)quizCorrect++;
+  const isCorrect=i===q.a;
+  if(isCorrect)quizCorrect++;
+  recordQuizAnswer(q,isCorrect);
   $('quizExplain').textContent=q.ex;
   $('quizRef').textContent=q.ref?`기출 연계: ${q.ref}`:'';
   $('quizNext').style.display='inline-block';
 }
-$('quizNext').onclick=()=>quizIndex===-1?newQuiz():nextQuiz();
+$('quizNext').onclick=()=>{
+  if(quizIndex!==-1){nextQuiz();return;}
+  if(quizSource==='wrong'){
+    const wrong=wrongQuizIndices();
+    if(wrong.length){startQuizFromIndices(wrong,'wrong');return;}
+    quizSource='normal';
+  }
+  newQuiz();
+};
 $('exportBtn').onclick=()=>{let blob=new Blob([JSON.stringify(user,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='comsi-study-backup.json';a.click();URL.revokeObjectURL(a.href);};
 $('importInput').onchange=e=>{let f=e.target.files[0];if(!f)return;let rd=new FileReader();rd.onload=()=>{try{user=JSON.parse(rd.result);save();renderQuestions();alert('복원이 완료되었습니다.');}catch{alert('올바른 백업 파일이 아닙니다.');}};rd.readAsText(f);};
 $('resetBtn').onclick=()=>{if(confirm('내가 수정한 분류/답안/메모/즐겨찾기를 모두 삭제할까요?')){user={};save();renderQuestions();}};
 function applyTheme(isDark){document.body.classList.toggle('dark',isDark);localStorage.setItem('dark',isDark?'1':'0');const b=$('themeBtn');if(b){b.textContent=isDark?'☀':'◐';b.setAttribute('aria-label',isDark?'라이트 모드로 변경':'다크 모드로 변경');}}
 const savedDark=localStorage.getItem('dark');applyTheme(savedDark===null?true:savedDark==='1');
 $('themeBtn').onclick=()=>applyTheme(!document.body.classList.contains('dark'));
-initFilters();refreshHome();renderQuestions();
-if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js?v=151');
+initFilters();refreshHome();renderQuestions();renderQuizLearningStats();
+if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js?v=152');

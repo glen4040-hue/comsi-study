@@ -110,6 +110,29 @@
             </select>
           </div>
         </div>
+        <div class="card block quiz-progress-card">
+          <div class="section-title">
+            <h3>학습 통계</h3>
+            <button id="resetQuizStats" class="text-btn">기록 초기화</button>
+          </div>
+          <div class="quiz-stat-grid">
+            <div class="quiz-stat"><b id="quizAttempts">0</b><span>누적 풀이</span></div>
+            <div class="quiz-stat"><b id="quizAccuracy">-</b><span>정답률</span></div>
+            <div class="quiz-stat"><b id="quizWrongCount">0</b><span>오답노트</span></div>
+          </div>
+          <div class="quiz-study-actions">
+            <button id="retryWrongBtn" class="secondary">틀린 문제만 다시 풀기</button>
+            <button id="toggleWrongNotebook" class="secondary">오답노트 보기</button>
+          </div>
+          <div id="quizCategoryStats" class="quiz-category-stats"></div>
+        </div>
+
+        <div id="wrongNotebook" class="card block wrong-notebook hidden">
+          <div class="section-title"><h3>오답노트</h3><span id="wrongNotebookCount" class="muted">0문제</span></div>
+          <p class="muted">마지막 풀이에서 틀린 문제가 남습니다. 다시 맞히면 오답노트에서 자동으로 빠집니다.</p>
+          <div id="wrongNotebookList"></div>
+        </div>
+
         <div class="card quiz-card">
           <div id="quizProgress" class="muted"></div>
           <h3 id="quizQ">시작 버튼을 눌러주세요.</h3>
