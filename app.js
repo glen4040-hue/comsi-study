@@ -1,5 +1,5 @@
 const RAW_BASE=window.QUESTIONS||[];
-const ANSWER_DATA=window.ANSWERS_135||{};
+const ANSWER_DATA={...(window.ANSWERS_134||{}),...(window.ANSWERS_135||{})};
 const BASE=RAW_BASE.map(q=>({...q,...(ANSWER_DATA[q.id]||{})}));
 const CATS=["컴퓨터 기초이론","하드웨어 시스템","시스템 SW 및 응용 SW","컴퓨터 통신 및 네트워크","시스템보안","컴퓨터 시스템 평가","법규·정책·표준","최신 기술 동향","미분류"];
 const KEY="comsiStudyUserV1";
@@ -256,4 +256,4 @@ function applyTheme(isDark){document.body.classList.toggle('dark',isDark);localS
 const savedDark=localStorage.getItem('dark');applyTheme(savedDark===null?true:savedDark==='1');
 $('themeBtn').onclick=()=>applyTheme(!document.body.classList.contains('dark'));
 initFilters();refreshHome();renderQuestions();renderQuizLearningStats();
-if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js?v=152');
+if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js?v=153');
