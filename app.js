@@ -1,4 +1,6 @@
-const BASE=window.QUESTIONS||[];
+const RAW_BASE=window.QUESTIONS||[];
+const ANSWER_DATA=window.ANSWERS_135||{};
+const BASE=RAW_BASE.map(q=>({...q,...(ANSWER_DATA[q.id]||{})}));
 const CATS=["컴퓨터 기초이론","하드웨어 시스템","시스템 SW 및 응용 SW","컴퓨터 통신 및 네트워크","시스템보안","컴퓨터 시스템 평가","법규·정책·표준","최신 기술 동향","미분류"];
 const KEY="comsiStudyUserV1";
 let user=JSON.parse(localStorage.getItem(KEY)||"{}");
@@ -6,6 +8,8 @@ let currentId=null, quizOrder=[],quizIndex=-1,quizCorrect=0,quizLocked=false,fav
 let mockQuestions=[], mockTimerId=null, mockSeconds=6000, mockSession=1, mockRequired=10, mockSelected=new Set(), currentPractice=null, pendingMockResult=null;
 const $=id=>document.getElementById(id);
 const merged=q=>({...q,...(user[q.id]||{})});
+const editedAnswer=q=>q.modelAnswerOverride??q.modelAnswer??'';
+const effectiveAnswer=q=>editedAnswer(q)||q.defaultAnswer||'';
 const all=()=>BASE.map(merged);
 function save(){localStorage.setItem(KEY,JSON.stringify(user));refreshHome();}
 function gotoPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));window.scrollTo({top:0,behavior:'instant'});if(id==='questions')renderQuestions();if(id==='stats')renderStats();}
@@ -15,7 +19,7 @@ document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>gotoPage(b.datas
 function counts(data){let m={};data.forEach(q=>m[q.category]=(m[q.category]||0)+1);return m;}
 function renderBars(el,data){let c=counts(data),total=Math.max(1,data.length),max=Math.max(1,...Object.values(c));el.innerHTML=Object.entries(c).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{let pct=Math.round(v/total*100);return `<div class="bar-row"><span title="${escapeHtml(k)}">${escapeHtml(k)}</span><div class="bar-bg"><div class="bar-fill" style="width:${v/max*100}%"></div></div><b class="bar-value">${v} · ${pct}%</b></div>`}).join('')||'<div class="muted">데이터 없음</div>';}
 function getStatus(q){return q.studyStatus||'미학습';}
-function refreshHome(){let d=all(),done=d.filter(q=>getStatus(q)==='완료').length,review=d.filter(q=>getStatus(q)==='복습필요').length,unstudied=d.filter(q=>getStatus(q)==='미학습').length,started=d.length-unstudied,pct=Math.round(done/Math.max(1,d.length)*100);$('qCount').textContent=d.length;$('favCount').textContent=d.filter(q=>q.favorite).length;$('answerCount').textContent=d.filter(q=>q.modelAnswer||q.myAnswer).length;$('reviewCount').textContent=review;$('studyPct').textContent=pct+'%';$('studySummary').textContent=`${started}문제 학습 시작 · ${done}문제 완료`;$('studyProgressBar').style.width=pct+'%';$('unstudiedCount').textContent=unstudied;$('homeReviewCount').textContent=review;renderBars($('homeBars'),d);}
+function refreshHome(){let d=all(),done=d.filter(q=>getStatus(q)==='완료').length,review=d.filter(q=>getStatus(q)==='복습필요').length,unstudied=d.filter(q=>getStatus(q)==='미학습').length,started=d.length-unstudied,pct=Math.round(done/Math.max(1,d.length)*100);$('qCount').textContent=d.length;$('favCount').textContent=d.filter(q=>q.favorite).length;$('answerCount').textContent=d.filter(q=>effectiveAnswer(q)||q.myAnswer).length;$('reviewCount').textContent=review;$('studyPct').textContent=pct+'%';$('studySummary').textContent=`${started}문제 학습 시작 · ${done}문제 완료`;$('studyProgressBar').style.width=pct+'%';$('unstudiedCount').textContent=unstudied;$('homeReviewCount').textContent=review;renderBars($('homeBars'),d);}
 function initFilters(){let rounds=[...new Set(BASE.map(q=>q.round))].sort((a,b)=>b-a);for(let id of ['roundFilter','statsRound']){let s=$(id);rounds.forEach(r=>s.insertAdjacentHTML('beforeend',`<option value="${r}">${r}회</option>`));}CATS.forEach(c=>{$('catFilter').insertAdjacentHTML('beforeend',`<option>${escapeHtml(c)}</option>`);$('editCategory').insertAdjacentHTML('beforeend',`<option>${escapeHtml(c)}</option>`);$('mockCategory').insertAdjacentHTML('beforeend',`<option>${escapeHtml(c)}</option>`);$('practiceCategory').insertAdjacentHTML('beforeend',`<option>${escapeHtml(c)}</option>`);});}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function renderQuestions(){
@@ -35,10 +39,11 @@ function toggleFavorite(id){let q=all().find(x=>x.id===id);if(!q)return;user[id]
 ['search','roundFilter','sessionFilter','catFilter','statusFilter','sortFilter'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',renderQuestions));
 $('favOnlyBtn').onclick=()=>{favOnly=!favOnly;$('favOnlyBtn').classList.toggle('active',favOnly);$('favOnlyBtn').setAttribute('aria-pressed',favOnly?'true':'false');$('favOnlyBtn').textContent=favOnly?'★ 즐겨찾기':'☆ 즐겨찾기';renderQuestions();};
 
-function openDetail(id){let q=all().find(x=>x.id===id);if(!q)return;currentId=id;$('modalMeta').textContent=`제${q.round}회 · ${q.session}교시 · ${q.number}번`;$('modalTitle').textContent=`${q.number}번 문제`;$('modalQuestion').textContent=q.text;$('editCategory').value=q.category;$('editStatus').value=getStatus(q);$('editKeywords').value=q.keywords||'';$('editFavorite').checked=!!q.favorite;$('editModel').value=q.modelAnswer||'';$('editMine').value=q.myAnswer||'';$('editMemo').value=q.memo||'';$('modal').classList.add('open');document.body.style.overflow='hidden';}
+function openDetail(id){let q=all().find(x=>x.id===id);if(!q)return;currentId=id;$('modalMeta').textContent=`제${q.round}회 · ${q.session}교시 · ${q.number}번`;$('modalTitle').textContent=`${q.number}번 문제`;$('modalQuestion').textContent=q.text;$('editCategory').value=q.category;$('editStatus').value=getStatus(q);$('editKeywords').value=q.keywords||q.defaultKeywords||'';$('editFavorite').checked=!!q.favorite;$('defaultAnswer').textContent=q.defaultAnswer||'아직 기본 학습용 답안이 등록되지 않았습니다.';$('answerBadge').textContent=q.defaultAnswer?'기본답안 제공':'준비중';$('answerBadge').classList.toggle('ready',!!q.defaultAnswer);$('editModel').value=editedAnswer(q);$('editMine').value=q.myAnswer||'';$('editMemo').value=q.memo||'';$('modal').classList.add('open');document.body.style.overflow='hidden';}
 function closeDetail(){$('modal').classList.remove('open');document.body.style.overflow='';}
 $('closeModal').onclick=closeDetail;$('modal').onclick=e=>{if(e.target===$('modal'))closeDetail();};
-$('saveDetail').onclick=()=>{user[currentId]={...(user[currentId]||{}),category:$('editCategory').value,studyStatus:$('editStatus').value,keywords:$('editKeywords').value,favorite:$('editFavorite').checked,modelAnswer:$('editModel').value,myAnswer:$('editMine').value,memo:$('editMemo').value};save();closeDetail();renderQuestions();};
+$('saveDetail').onclick=()=>{user[currentId]={...(user[currentId]||{}),category:$('editCategory').value,studyStatus:$('editStatus').value,keywords:$('editKeywords').value,favorite:$('editFavorite').checked,modelAnswerOverride:$('editModel').value,myAnswer:$('editMine').value,memo:$('editMemo').value};delete user[currentId].modelAnswer;save();closeDetail();renderQuestions();};
+$('copyDefaultAnswer').onclick=()=>{let q=all().find(x=>x.id===currentId);if(!q||!q.defaultAnswer){alert('복사할 기본답안이 없습니다.');return;}if($('editModel').value.trim()&&!confirm('현재 내 수정본을 기본답안으로 덮어쓸까요?'))return;$('editModel').value=q.defaultAnswer;};
 
 
 $('goUnstudied').onclick=()=>{$('statusFilter').value='미학습';gotoPage('questions');};
@@ -57,8 +62,8 @@ $('practiceMode').onclick=()=>setQuizMode('practice');
 $('mockMode').onclick=()=>setQuizMode('mock');
 function formatTime(sec){return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');}
 function extractKeywords(q){
-  const manual=(q.keywords||'').split(',').map(x=>x.trim()).filter(Boolean);
-  const text=(q.modelAnswer||q.text||'');
+  const manual=(q.keywords||q.defaultKeywords||'').split(',').map(x=>x.trim()).filter(Boolean);
+  const text=(effectiveAnswer(q)||q.text||'');
   const eng=[...text.matchAll(/[A-Za-z][A-Za-z0-9+.#/-]{2,}/g)].map(m=>m[0]);
   const kor=[...text.matchAll(/[가-힣]{2,}/g)].map(m=>m[0]).filter(x=>!['설명하시오','대하여','관련하여','다음','사항','개념','방법','기술','구성','특징'].includes(x));
   return [...new Set([...manual,...eng,...kor])].slice(0,12);
@@ -84,7 +89,7 @@ function pickPractice(){
 $('startPractice').onclick=pickPractice;$('newPractice').onclick=pickPractice;
 $('practiceCheck').onclick=()=>{
   if(!currentPractice)return;
-  const ans=$('practiceAnswer').value,cov=keywordCoverage(currentPractice,ans),sig=structureSignals(ans),model=currentPractice.modelAnswer||'아직 저장된 모범답안이 없습니다.';
+  const ans=$('practiceAnswer').value,cov=keywordCoverage(currentPractice,ans),sig=structureSignals(ans),model=effectiveAnswer(currentPractice)||'아직 저장된 학습용 답안이 없습니다.';
   const missed=cov.keys.filter(k=>!cov.hits.includes(k));
   $('practiceReview').innerHTML=`<div class="review-grid"><div class="review-stat"><b>${sig.length}</b><span>글자수</span></div><div class="review-stat"><b>${sig.sections}</b><span>구조 표식</span></div><div class="review-stat"><b>${cov.pct}%</b><span>키워드</span></div></div>
   <h4>포함 키워드</h4><div class="keyword-wrap">${cov.hits.map(k=>`<span class="keyword hit">${escapeHtml(k)}</span>`).join('')||'<span class="muted">없음</span>'}</div>
@@ -111,7 +116,7 @@ function openScoring(fromTimer=false){
   if(!fromTimer&&!confirm('자기채점 화면으로 이동할까요?'))return;
   clearInterval(mockTimerId);mockTimerId=null;$('mockExam').classList.add('hidden');$('scoringPanel').classList.remove('hidden');
   const cfg=getMockConfig(mockSession),selected=[...mockSelected];pendingMockResult={date:new Date().toISOString(),session:mockSession,required:cfg.required,point:cfg.point,scores:{}};
-  $('scoreList').innerHTML=selected.map((i,idx)=>{const q=mockQuestions[i],ans=document.querySelector(`.mock-answer[data-mock="${i}"]`)?.value||'',cov=keywordCoverage(q,ans),sig=structureSignals(ans),model=q.modelAnswer||'저장된 모범답안이 없습니다.',opts=mockSession===1?[0,2,4,6,8,10]:[0,5,10,15,20,25];return `<article class="score-item"><div class="qmeta"><span class="meta-chip round">${q.round}회</span><span class="meta-chip">${q.session}교시</span></div><h3>${idx+1}. ${escapeHtml(q.text)}</h3><div class="auto-check"><span>글자수 <b>${sig.length}</b></span><span>구조 <b>${sig.sections}</b></span><span>키워드 <b>${cov.pct}%</b></span></div><details><summary>내 답안</summary><div class="model-box">${escapeHtml(ans||'(미작성)').replace(/\n/g,'<br>')}</div></details><details><summary>모범답안 / 키워드</summary><div class="keyword-wrap">${cov.keys.map(k=>`<span class="keyword ${cov.hits.includes(k)?'hit':'miss'}">${escapeHtml(k)}</span>`).join('')}</div><div class="model-box">${escapeHtml(model).replace(/\n/g,'<br>')}</div></details><div class="self-score"><span>최종 자기평가</span><div>${opts.map(v=>`<button class="score-btn" data-qid="${q.id}" data-score="${v}">${v}</button>`).join('')}</div></div></article>`;}).join('');
+  $('scoreList').innerHTML=selected.map((i,idx)=>{const q=mockQuestions[i],ans=document.querySelector(`.mock-answer[data-mock="${i}"]`)?.value||'',cov=keywordCoverage(q,ans),sig=structureSignals(ans),model=effectiveAnswer(q)||'저장된 학습용 답안이 없습니다.',opts=mockSession===1?[0,2,4,6,8,10]:[0,5,10,15,20,25];return `<article class="score-item"><div class="qmeta"><span class="meta-chip round">${q.round}회</span><span class="meta-chip">${q.session}교시</span></div><h3>${idx+1}. ${escapeHtml(q.text)}</h3><div class="auto-check"><span>글자수 <b>${sig.length}</b></span><span>구조 <b>${sig.sections}</b></span><span>키워드 <b>${cov.pct}%</b></span></div><details><summary>내 답안</summary><div class="model-box">${escapeHtml(ans||'(미작성)').replace(/\n/g,'<br>')}</div></details><details><summary>모범답안 / 키워드</summary><div class="keyword-wrap">${cov.keys.map(k=>`<span class="keyword ${cov.hits.includes(k)?'hit':'miss'}">${escapeHtml(k)}</span>`).join('')}</div><div class="model-box">${escapeHtml(model).replace(/\n/g,'<br>')}</div></details><div class="self-score"><span>최종 자기평가</span><div>${opts.map(v=>`<button class="score-btn" data-qid="${q.id}" data-score="${v}">${v}</button>`).join('')}</div></div></article>`;}).join('');
   document.querySelectorAll('.score-btn').forEach(b=>b.onclick=()=>{const qid=b.dataset.qid;pendingMockResult.scores[qid]=Number(b.dataset.score);document.querySelectorAll(`.score-btn[data-qid="${qid}"]`).forEach(x=>x.classList.toggle('active',x===b));updateScoreSummary();});updateScoreSummary();
 }
 function updateScoreSummary(){if(!pendingMockResult)return;const vals=Object.values(pendingMockResult.scores),total=vals.reduce((a,b)=>a+b,0);$('scoreTotal').textContent=total;$('scoreProgress').textContent=`${vals.length}/${pendingMockResult.required} 채점`;$('scoreBreakdown').textContent=`${mockSession}교시 · ${pendingMockResult.required}문제`;}
@@ -133,4 +138,4 @@ function applyTheme(isDark){document.body.classList.toggle('dark',isDark);localS
 const savedDark=localStorage.getItem('dark');applyTheme(savedDark===null?true:savedDark==='1');
 $('themeBtn').onclick=()=>applyTheme(!document.body.classList.contains('dark'));
 initFilters();refreshHome();renderQuestions();
-if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js?v=141');
+if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js?v=150');

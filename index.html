@@ -201,12 +201,15 @@
     <p id="modalQuestion" class="question-text"></p>
     <div class="detail-grid"><label>분류<select id="editCategory"></select></label><label>학습상태<select id="editStatus"><option>미학습</option><option>학습중</option><option>복습필요</option><option>완료</option></select></label></div><label>핵심 키워드<input id="editKeywords" class="detail-input" placeholder="예: FTL, TRIM, Wear Leveling"></label>
     <label class="favline"><input id="editFavorite" type="checkbox"> 즐겨찾기</label>
-    <label>모범답안<textarea id="editModel" rows="9" placeholder="여기에 모범답안을 작성하거나 붙여넣으세요."></textarea></label>
-    <label>내 답안<textarea id="editMine" rows="9" placeholder="내가 암기할 답안을 직접 수정해보세요."></textarea></label>
+    <div class="answer-head"><div><b>학습용 기본답안</b><span id="answerBadge" class="answer-badge"></span></div><button id="copyDefaultAnswer" class="secondary small" type="button">내 수정본으로 복사</button></div>
+    <div class="answer-note">공식 채점기준/모범답안이 아닌 학습용 예시답안입니다. 기본답안은 읽기 전용이며 내 수정본은 자유롭게 편집할 수 있습니다.</div>
+    <div id="defaultAnswer" class="default-answer"></div>
+    <label>내 수정본<textarea id="editModel" rows="10" placeholder="기본답안을 복사한 뒤 내 스타일로 수정하세요."></textarea></label>
+    <label>내 답안<textarea id="editMine" rows="9" placeholder="암기/실전용 내 답안을 직접 작성하세요."></textarea></label>
     <label>메모<textarea id="editMemo" rows="4" placeholder="키워드, 그림 아이디어, 복습 포인트"></textarea></label>
     <button id="saveDetail" class="primary wide">저장</button>
   </div>
 </div>
-<script src="questions.js"></script><script src="quiz.js"></script><script src="app.js"></script>
+<script src="questions.js"></script><script src="answers-135.js"></script><script src="quiz.js"></script><script src="app.js"></script>
 </body>
 </html>

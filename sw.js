@@ -1,5 +1,5 @@
-const CACHE='comsi-v141';
-const FILES=['./','./index.html','./style.css','./app.js','./questions.js','./quiz.js','./manifest.json'];
+const CACHE='comsi-v150';
+const FILES=['./','./index.html','./style.css','./app.js','./questions.js','./answers-135.js','./quiz.js','./manifest.json'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)))});
 self.addEventListener('activate',e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
 self.addEventListener('fetch',e=>{
