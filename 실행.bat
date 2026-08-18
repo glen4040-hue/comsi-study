@@ -1,3 +1,0 @@
-@echo off
-cd /d %~dp0
-where py >nul 2>nul && (start http://localhost:8000 & py -m http.server 8000) || (where python >nul 2>nul && (start http://localhost:8000 & python -m http.server 8000) || (start index.html))

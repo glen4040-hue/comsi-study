@@ -256,4 +256,4 @@ function applyTheme(isDark){document.body.classList.toggle('dark',isDark);localS
 const savedDark=localStorage.getItem('dark');applyTheme(savedDark===null?true:savedDark==='1');
 $('themeBtn').onclick=()=>applyTheme(!document.body.classList.contains('dark'));
 initFilters();refreshHome();renderQuestions();renderQuizLearningStats();
-if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js?v=153');
+if('serviceWorker'in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js?v=154');
